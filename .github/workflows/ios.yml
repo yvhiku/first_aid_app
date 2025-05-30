@@ -1,0 +1,27 @@
+name: Build iOS
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+
+      - run: |
+          echo "YANDEX_MAPKIT_API_KEY=${{ secrets.YANDEX_MAPKIT_API_KEY }}" >> $GITHUB_ENV
+          cd ios && pod install
+
+      - run: flutter build ios --release --no-codesign
+
+      - uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: ios-build
+          path: build/ios/iphoneos/Runner.app
